@@ -57,6 +57,7 @@ The configuration file contains a JSON object with the following fields:
   * **apiKey**: The API key for your GoDaddy account
   * **secret**: The API key secret for your GoDaddy account
   * **domain**: The domain for which to update the DNS records
+  * **minUpdateInterval**: Minimum time between updates (e.g. `"12 Hours"`, `"1 Day"`, `"10 Minutes"`) _Set as `false` to only update on IP address change
   * **records**: An array of objects that defines the records to update. Every
   record object can define the following values:
    * **name**: (mandatory) the name of the record (e.g. `"mysubdomain"`, `"@"` or `"*"`)

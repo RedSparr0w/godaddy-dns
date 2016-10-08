@@ -1,6 +1,7 @@
 {
   "apiKey": "",
   "secret": "",
+  "minUpdateInterval": "12 Hours",
   "domain": "example.com",
   "records": [{"type": "A", "name": "mysubdomain", "ttl": 600}]
 }

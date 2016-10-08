@@ -46,7 +46,7 @@ function getLastIp() {
 				return reject(err);
 			}
 
-			resolve(ip);
+			resolve(ip.split(","));
 		});
 	});
 }
@@ -109,17 +109,49 @@ function updateRecords(ip) {
 	});
 }
 
-let lastIp;
-let currentIp;
+let lastUpdate,
+	lastIp,
+	currentIp,
+	minTime,
+	minUpdateIdentifier,
+	minUpdateCount;
 
 getLastIp()
 .then((ip) => {
-	lastIp = ip;
+	lastUpdate = ip[0];
+	lastIp = ip[1];
 	return getCurrentIp();
 })
 .then((ip) => {
 	currentIp = ip;
-	if (lastIp === currentIp) {
+	if (config.minUpdateInterval){
+		let matches = config.minUpdateInterval.toUpperCase().match(/(\d+) (\w+)/);
+		minUpdateCount = Number(matches[1]);
+		minUpdateIdentifier = matches[2];
+	} else {
+		minUpdateCount = 0;
+		minUpdateIdentifier = "";
+	}
+	switch (minUpdateIdentifier) {
+		case "MIN":
+		case "MINS":
+		case "MINUTE":
+		case "MINUTES":
+			minTime = minUpdateCount*60*1000;
+			break;
+		case "HOUR":
+		case "HOURS":
+			minTime = minUpdateCount*60*60*1000;
+			break;
+		case "DAY":
+		case "DAYS":
+			minTime = minUpdateCount*24*60*60*1000;
+			break;
+		default:
+			minTime = 0;
+			break;
+	}
+	if (lastIp === currentIp && (new Date()-Number(lastUpdate) < minTime || minTime==0)) {
 		return Promise.reject()
 	}
 
