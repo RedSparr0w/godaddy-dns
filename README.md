@@ -72,16 +72,6 @@ See [config.json.sample](config.json.sample) for an example of how to structure
 your `config.json`.
 
 
-## Last IP cache
-
-To avoid to send useless requests to the GoDaddy API (e.g. when the IP is not
-changed) the script stores the last public ip sent to GoDaddy in a cache file.
-This file is by default stored in the default OS temp folder with the name `.lastip`.
-You can use a custom location for this file with the option `--ipFile`.
-If you want to clear this cache (and force a new request to the GoDaddy API) you
-can simply delete this file.
-
-
 ## Running the script continuously with Cron
 
 One of the principal use cases why you might want to use this script (and actually
@@ -111,7 +101,6 @@ Usage: godaddy-dns [options]
     -h, --help           output usage information
     -V, --version        output the version number
     -c, --config [file]  specify the configuration file to use  (default "<user home folder>/.godaddy-dns.json")
-    -i, --ipfile [file]  specify which file to use to store the last found ip (default "<user temp folder>/.lastip")
 ```
 
 ## Bugs and improvements

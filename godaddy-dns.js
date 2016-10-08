@@ -11,17 +11,14 @@ const request = require('request');
 const pkg = require('./package.json');
 
 const defaultConfigFile = path.join(os.homedir(),'.godaddy-dns.json');
-const defaultLastIpFile = path.join(os.tmpdir(), '.lastip');
 
 program
 	.version(pkg.version)
 	.option('-c, --config [file]', `specify the configuration file to use (default "${defaultConfigFile}")`)
-	.option('-i, --ipfile [file]', `specify which file to use to store the last found ip (default "${defaultLastIpFile}")`)
 	.parse(process.argv)
 ;
 
 const config = JSON.parse(fs.readFileSync(program.config || defaultConfigFile, 'utf8'));
-const lastIpFile = program.ipfile || defaultLastIpFile;
 
 function getCurrentIp() {
 	return new Promise((resolve, reject) => {
@@ -36,29 +33,23 @@ function getCurrentIp() {
 }
 
 function getLastIp() {
+	let records = config.records;
+	let options = {
+		method: 'GET',
+		url: `https://api.godaddy.com/v1/domains/${config.domain}/records/${records[0].type}/${records[0].name.replace("@","%40")}`,
+		headers: {
+			authorization: `sso-key ${config.apiKey}:${config.secret}`,
+			'content-type': 'application/json'
+		},
+		json: true
+	};
 	return new Promise((resolve, reject) => {
-		if (!fs.existsSync(lastIpFile)) {
-			return resolve(undefined);
-		}
-
-		fs.readFile(lastIpFile, 'utf8', (err, ip) => {
+		request(options, (err, response, ip) => {
 			if (err) {
 				return reject(err);
 			}
 
-			resolve(ip);
-		});
-	});
-}
-
-function saveLastIp(ip) {
-	return new Promise((resolve, reject) => {
-		fs.writeFile(lastIpFile, ip, 'utf8', (err) => {
-			if (err) {
-				return reject(err);
-			}
-
-			resolve();
+			resolve(ip.length > 0 ? ip[0].data : null);
 		});
 	});
 }
@@ -109,8 +100,8 @@ function updateRecords(ip) {
 	});
 }
 
-let lastIp;
-let currentIp;
+let lastIp,
+	currentIp;
 
 getLastIp()
 .then((ip) => {
@@ -124,9 +115,6 @@ getLastIp()
 	}
 
 	return updateRecords(currentIp);
-})
-.then(() => {
-	return saveLastIp(currentIp);
 })
 .then(() => {
 	console.log(`[${new Date()}] Successfully updated DNS records to ip ${currentIp}`);
